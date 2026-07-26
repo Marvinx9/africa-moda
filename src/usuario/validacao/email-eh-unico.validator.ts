@@ -13,10 +13,10 @@ export class EmailEhUnicoValidator implements ValidatorConstraintInterface {
   constructor(private usuarioService: UsuarioService) {}
 
   async validate(value: any): Promise<boolean> {
-    const usuarioComEmailExiste = await this.usuarioService.existeComEmail(
+    const usuario_com_email_existe = await this.usuarioService.existeComEmail(
       String(value),
     );
-    return !usuarioComEmailExiste;
+    return !usuario_com_email_existe;
   }
 }
 
