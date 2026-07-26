@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -23,34 +24,35 @@ export class ProdutoController {
     return await this.produtoService.listarProdutos();
   }
 
+  @Get(':id')
+  @ApiOkResponse({ type: ListarProdutoDTO })
+  async buscar(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.produtoService.buscarProduto(id);
+  }
+
   @Post()
-  async criaNovo(@Body() dadosProduto: CriarProdutoDTO) {
-    return await this.produtoService.criarProduto(dadosProduto);
+  async criaNovo(@Body() produto: CriarProdutoDTO) {
+    return await this.produtoService.criarProduto(produto);
   }
 
   @Put('/:id')
   async atualiza(
-    @Param('id') id: string,
-    @Body() dadosProduto: AtualizaProdutoDTO,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() produto: AtualizaProdutoDTO,
   ) {
-    const produtoAlterado = await this.produtoService.atualizarProduto(
-      id,
-      dadosProduto,
-    );
+    await this.produtoService.atualizarProduto(id, produto);
 
     return {
       mensagem: 'produto atualizado com sucesso',
-      produto: produtoAlterado,
     };
   }
 
   @Delete('/:id')
-  async remove(@Param('id') id: string) {
-    const produtoRemovido = await this.produtoService.deletarProduto(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.produtoService.deletarProduto(id);
 
     return {
       mensagem: 'produto removido com sucesso',
-      produto: produtoRemovido,
     };
   }
 }

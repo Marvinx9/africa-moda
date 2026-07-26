@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ListarUsuarioDTO } from './dto/listar-usuario.dto';
 import { UsuarioEntity } from './usuario.entity';
 import { AtualizarUsuarioDTO } from './dto/atualizar-usuario.dto';
+import { CriarUsuarioDTO } from './dto/criar-usuario.dto';
 
 @Injectable()
 export class UsuarioService {
@@ -14,40 +19,44 @@ export class UsuarioService {
 
   async listarUsuarios(): Promise<ListarUsuarioDTO[]> {
     const usuarios = await this.usuarioRepository.find();
-    const listaUsuarios = usuarios.map((u) => {
+    const lista_usuarios = usuarios.map((u) => {
       const usuario = new ListarUsuarioDTO();
       usuario.id = u.id;
       usuario.nome = u.nome;
       return usuario;
     });
-    return listaUsuarios;
+    return lista_usuarios;
   }
 
   async existeComEmail(email: string): Promise<boolean> {
-    const possivelUsuario = await this.usuarioRepository.findOneBy({ email });
-    return possivelUsuario !== null;
+    const possivel_usuario = await this.usuarioRepository.findOneBy({ email });
+    return possivel_usuario !== null;
   }
 
-  async criarUsuario(usuarioEntity: UsuarioEntity): Promise<void> {
-    await this.usuarioRepository.save(usuarioEntity);
+  async criarUsuario(usuario: CriarUsuarioDTO) {
+    const usuario_entity = new UsuarioEntity();
+    Object.assign(usuario_entity, usuario as UsuarioEntity);
+
+    return await this.usuarioRepository.save(usuario_entity);
   }
 
-  async atualizaUsuario(
-    id: string,
-    usuarioAtualizar: AtualizarUsuarioDTO,
-  ): Promise<UsuarioEntity | null> {
-    await this.usuarioRepository.update(id, usuarioAtualizar);
-    return await this.usuarioRepository.findOneBy({ id });
-  }
+  async atualizaUsuario(id: string, usuario: AtualizarUsuarioDTO) {
+    const usuario_entity = await this.usuarioRepository.findOneBy({ id });
 
-  async deletaUsuario(id: string): Promise<UsuarioEntity> {
-    const usuario = await this.usuarioRepository.findOneBy({ id });
-
-    if (!usuario) {
-      throw new NotFoundException('usuário não encontrado!');
+    if (!usuario_entity) {
+      throw new BadRequestException('usuário não encontrado');
     }
 
-    await this.usuarioRepository.delete(id);
-    return usuario;
+    Object.assign(usuario_entity, usuario as UsuarioEntity);
+
+    await this.usuarioRepository.save(usuario_entity);
+  }
+
+  async deletaUsuario(id: string): Promise<void> {
+    const resultado = await this.usuarioRepository.delete(id);
+
+    if (!resultado.affected) {
+      throw new NotFoundException('usuário não encontrado!');
+    }
   }
 }
