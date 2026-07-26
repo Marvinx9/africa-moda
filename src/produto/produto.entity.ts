@@ -9,14 +9,12 @@ import {
 } from 'typeorm';
 import { ProdutoCaracteristicaEntity } from './produto-caracteristica.entity';
 import { ProdutoImagemEntity } from './produto-imagem.entity';
+import { ItemPedidoEntity } from '../pedido/item-pedido.entity';
 
 @Entity({ name: 'produtos' })
 export class ProdutoEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ name: 'usuario_id', length: 100, nullable: false })
-  usuario_id: string;
 
   @Column({ name: 'nome', length: 100, nullable: false })
   nome: string;
@@ -35,14 +33,14 @@ export class ProdutoEntity {
 
   @OneToMany(
     () => ProdutoCaracteristicaEntity,
-    (produtoCaracteristicaEntity) => produtoCaracteristicaEntity.produto,
+    (produto_caracteristica_entity) => produto_caracteristica_entity.produto,
     { cascade: true, eager: true },
   )
   caracteristicas: ProdutoCaracteristicaEntity[];
 
   @OneToMany(
     () => ProdutoImagemEntity,
-    (produtoImagemEntity) => produtoImagemEntity.produto,
+    (produto_imagem_entity) => produto_imagem_entity.produto,
     { cascade: true, eager: true },
   )
   imagens: ProdutoImagemEntity[];
@@ -55,4 +53,7 @@ export class ProdutoEntity {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deleted_at: string;
+
+  @OneToMany(() => ItemPedidoEntity, (item_pedido) => item_pedido.produto)
+  itens_pedido: ItemPedidoEntity[];
 }
