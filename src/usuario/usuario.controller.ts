@@ -7,11 +7,9 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
 import { AtualizarUsuarioDTO } from './dto/atualizar-usuario.dto';
 import { CriarUsuarioDTO } from './dto/criar-usuario.dto';
 import { ListarUsuarioDTO } from './dto/listar-usuario.dto';
-import { UsuarioEntity } from './usuario.entity';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { UsuarioService } from './usuario.service';
 
@@ -26,17 +24,11 @@ export class UsuarioController {
   }
 
   @Post()
-  async criaUsuario(@Body() dadosDoUsuario: CriarUsuarioDTO) {
-    const usuarioEntity = new UsuarioEntity();
-    usuarioEntity.email = dadosDoUsuario.email;
-    usuarioEntity.senha = dadosDoUsuario.senha;
-    usuarioEntity.nome = dadosDoUsuario.nome;
-    usuarioEntity.id = uuid();
-
-    await this.usuarioService.criarUsuario(usuarioEntity);
+  async criaUsuario(@Body() usuario: CriarUsuarioDTO) {
+    const usuario_entity = await this.usuarioService.criarUsuario(usuario);
 
     return {
-      usuario: { id: usuarioEntity.id, nome: usuarioEntity.nome },
+      usuario: { id: usuario_entity.id, nome: usuario_entity.nome },
       messagem: 'usuário criado com sucesso',
     };
   }
@@ -44,26 +36,21 @@ export class UsuarioController {
   @Put('/:id')
   async atualizaUsuario(
     @Param('id') id: string,
-    @Body() novosDados: AtualizarUsuarioDTO,
+    @Body() usuario: AtualizarUsuarioDTO,
   ) {
-    const usuarioAtualizado = await this.usuarioService.atualizaUsuario(
-      id,
-      novosDados,
-    );
+    await this.usuarioService.atualizaUsuario(id, usuario);
 
     return {
-      usuario: usuarioAtualizado,
       messagem: 'usuário atualizado com sucesso',
     };
   }
 
   @Delete('/:id')
   async removeUsuario(@Param('id') id: string) {
-    const usuarioRemovido = await this.usuarioService.deletaUsuario(id);
+    await this.usuarioService.deletaUsuario(id);
 
     return {
-      usuario: usuarioRemovido,
-      messagem: 'usuário removido com suceso',
+      messagem: 'usuário removido com sucesso',
     };
   }
 }
